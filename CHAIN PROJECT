@@ -1,0 +1,639 @@
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+local Window = OrionLib:MakeWindow({Name = "Project CHAIN", HidePremium = false, SaveConfig = true, ConfigFolder = "CHAIN"})
+
+--[[
+Name = <string> - The name of the UI.
+HidePremium = <bool> - Whether or not the user details shows Premium status or not.
+SaveConfig = <bool> - Toggles the config saving in the UI.
+ConfigFolder = <string> - The name of the folder where the configs are saved.
+IntroEnabled = <bool> - Whether or not to show the intro animation.
+IntroText = <string> - Text to show in the intro animation.
+IntroIcon = <string> - URL to the image you want to use in the intro animation.
+Icon = <string> - URL to the image you want displayed on the window.
+CloseCallback = <function> - Function to execute when the window is closed.
+]]
+    
+local Tab = Window:MakeTab({
+	Name = "Exploits",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+--[[
+Name = <string> - The name of the tab.
+Icon = <string> - The icon of the tab.
+PremiumOnly = <bool> - Makes the tab accessible to Sirus Premium users only.
+]]
+
+local Section = Tab:AddSection({
+	Name = "Scraps, Aimbot, ESP!"
+})
+
+--[[
+Name = <string> - The name of the section.
+]]
+
+OrionLib:MakeNotification({
+	Name = "Thank you for using the script!",
+	Content = "THIS IS A EARLY TEST, MORE EXPLOITS COMING SOON! <3",
+	Image = "rbxassetid://4483345998",
+	Time = 5
+})
+
+--[[
+Title = <string> - The title of the notification.
+Content = <string> - The content of the notification.
+Image = <string> - The icon of the notification.
+Time = <number> - The duration of the notfication.
+]]
+
+Tab:AddButton({
+	Name = "AIMBOT! (Requires Any Weapon in the game!",
+	Callback = function()
+      		local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+--[[
+	* The libraries isnt mine, like Bin
+	* It tracks connections, instances, functions, threads, and objects to be later destroyed.
+]]
+local Bin
+do
+	Bin = setmetatable({}, {
+		__tostring = function()
+			return "Bin"
+		end,
+	})
+	Bin.__index = Bin
+	function Bin.new(...)
+		local self = setmetatable({}, Bin)
+		return self:constructor(...) or self
+	end
+	function Bin:constructor()
+	end
+	function Bin:add(item)
+		local node = {
+			item = item,
+		}
+		if self.head == nil then
+			self.head = node
+		end
+		if self.tail then
+			self.tail.next = node
+		end
+		self.tail = node
+		return self
+	end
+	function Bin:destroy()
+		local head = self.head
+		while head do
+			local _binding = head
+			local item = _binding.item
+			if type(item) == "function" then
+				item()
+			elseif typeof(item) == "RBXScriptConnection" then
+				item:Disconnect()
+			elseif type(item) == "thread" then
+				task.cancel(item)
+			elseif item.destroy ~= nil then
+				item:destroy()
+			elseif item.Destroy ~= nil then
+				item:Destroy()
+			end
+			head = head.next
+			self.head = head
+		end
+	end
+	function Bin:isEmpty()
+		return self.head == nil
+	end
+end
+
+--[[
+    ----------------------
+    Variables & References
+    ----------------------
+]]
+
+local LootFolders : Folder = Workspace.Misc.Zones.LootingItems:WaitForChild('Scrap')
+local LocalPlayer : Player = Players.LocalPlayer
+local CurrentCamera = Workspace.CurrentCamera
+local ScreenGui = Instance.new("ScreenGui")
+
+--[[
+    --------------------
+    Function Declaration
+    --------------------
+    All the functions that are used throughout the code
+]]
+function format(num, format)
+    local formatted = string.format(`%.{format}f`, num)
+    return formatted
+end
+
+function blackfunction(...)
+    return ...
+end
+
+--[[
+    ----------------
+    Custom Functions
+    ----------------
+    All the custom functions that are used through the code for compability
+]]
+local cloneref = cloneref or blackfunction
+
+local function SafeGetService(service)
+    return cloneref(service)
+end
+
+--[[
+    ---------------------
+    Component Declaration
+    ---------------------
+]]
+local BaseComponent
+do
+	BaseComponent = setmetatable({}, {
+		__tostring = function()
+			return "BaseComponent"
+		end,
+	})
+	BaseComponent.__index = BaseComponent
+	function BaseComponent.new(...)
+		local self = setmetatable({}, BaseComponent)
+		return self:constructor(...) or self
+	end
+	function BaseComponent:constructor(item)
+		self.bin = Bin.new()
+		self.object = item
+	end
+	function BaseComponent:destroy()
+		self.bin:destroy()
+	end
+end
+local LootableComponent
+do
+    local super = BaseComponent
+    LootableComponent = setmetatable({}, {
+        __tostring = function()
+            return "LootableComponent"
+        end,
+        __index = super,
+    })
+    LootableComponent.__index = LootableComponent
+    function LootableComponent.new(...)
+        local self =  setmetatable({}, LootableComponent)
+        return self:constructor(...) or self
+    end
+    function LootableComponent:constructor(isAvailable : boolean ,scrap : Model, pivot: CFrame) : (boolean, Model, CFrame)
+        super.constructor(self, scrap)
+		-- Interface:
+		self.interface = {
+			container = Instance.new("Frame"),
+			name = Instance.new("TextLabel"),
+		}
+		-- Variables:
+        self.pivotPos = pivot
+        self.isAvailable = isAvailable
+		
+        -- init:
+        self:initialize()
+    end
+    function LootableComponent:initialize()
+        local _binding = self
+        local bin = _binding.bin
+		local interface = _binding.interface
+		local instance = _binding.object
+		local values : Folder = instance:WaitForChild('Values', 10)
+        
+        -- Instances:
+        local container = interface.container
+        local name = interface.name
+		-- Properties:
+		container.Visible = false
+        container.AnchorPoint = Vector2.new(0.5, 0)
+        container.BackgroundTransparency = 1
+        name.BackgroundTransparency = 1
+		name.Font = Enum.Font.Nunito
+		name.Text = 'Scrap'
+		name.TextColor3 = Color3.new(0, 1, 0)
+		name.TextSize = 15
+		name.TextStrokeTransparency = 0.5
+		name.Size = UDim2.new(1, 0, 0, 14)
+		container.Size = UDim2.new(0, 100, 0, 50)
+		-- Initialization:
+		name.Parent = container
+		container.Parent = ScreenGui
+		bin:add(values:GetAttributeChangedSignal('Available'):Connect(function()
+			_binding.isAvailable = values:GetAttribute('Available')
+		end))
+		bin:add(RunService.RenderStepped:Connect(function()
+			_binding:render()
+		end))
+    end
+	function LootableComponent:render()
+		local camera = CurrentCamera
+		local _binding = self
+		local instance = _binding.object
+		local pivot = _binding.pivotPos
+		local interface = _binding.interface
+		local container = interface.container
+		local name = interface.name
+
+		if camera and instance then
+			local position, visible = camera:WorldToViewportPoint(pivot.Position)
+
+			if visible and self.isAvailable and LocalPlayer.Character:FindFirstChild('HumanoidRootPart') then
+				local scale = 1 / (position.Z * math.tan(math.rad(camera.FieldOfView * 0.5)) * 2) * 1000
+                local width, height = math.floor(1 * scale), math.floor(3 * scale)
+                local x, y = math.floor(position.X), math.floor(position.Y)
+                local xPosition, yPosition = math.floor(x - width * 0.5), math.floor((y - height * 0.5) + (0.5 * scale))
+                local vector2 = Vector2.new(xPosition, yPosition)
+
+				local _valueExisted = container.Visible == false
+				container.Visible = true
+				
+				local PositionDiff = LocalPlayer.Character.HumanoidRootPart.Position - pivot.Position
+				name.Text = `Scrap [{format(PositionDiff.Magnitude, 1)}]`
+
+				container.Position = UDim2.new(0, vector2.X, 0, vector2.Y)
+			else
+                local _valueExisted_1 = container.Visible == true
+                container.Visible = false
+			end
+		else
+			self:destroy()
+		end
+	end
+end
+
+-- Runs on the loot folders children
+for _, v in (LootFolders:GetChildren()) do
+	if v:GetAttribute('Scrap') then
+		LootableComponent.new(v.Values:GetAttribute('Available'), v, v:GetPivot())
+	end
+end
+
+ScreenGui.DisplayOrder = 10
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.Parent = SafeGetService(game:GetService('CoreGui'))
+
+game:GetService("StarterGui"):SetCore("SendNotification", {
+	Title = "Executed!";
+	Text = "DM Witchyy#6039 for issues!";
+	Duration = 5;
+});
+return 0
+  	end    
+})
+
+
+Tab:AddButton({
+	Name = "Auto Collect Scraps",
+	Callback = function()
+      		-- Compiled with roblox-ts v2.3.0
+local Workspace = cloneref(game:GetService("Workspace"))
+local Players = cloneref(game:GetService("Players"))
+local Camera = Workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+local MiscFolder = Workspace:WaitForChild("Misc")
+local ZonesFolder = MiscFolder:WaitForChild("Zones")
+local LootFolders = ZonesFolder:WaitForChild("LootingItems"):WaitForChild("Scrap")
+local ScrapCollectorController = {}
+do
+	local _container = ScrapCollectorController
+	local scrapCounter = 0
+	local lookAt = function(cframe)
+		local lookAtPos = CFrame.new(Camera.CFrame.Position, cframe.Position)
+		Camera.CFrame = lookAtPos
+	end
+	local bringPlr = function(cframe)
+		local _result = LocalPlayer.Character
+		if _result ~= nil then
+			_result:PivotTo(cframe)
+		end
+	end
+	local collect = function(scrap)
+		scrapCounter += 1
+		--print(`Processing scrap: {scrapCounter}`)
+		local pivotCFrame = scrap:GetPivot()
+		local proximityPrompt = scrap:FindFirstChildWhichIsA("ProximityPrompt", true)
+		if proximityPrompt ~= nil then
+			task.wait(0.4)
+			--print("Looking at scrap...")
+			lookAt(pivotCFrame)
+			task.wait(0.2)
+			--print("Fired the scraps prompt")
+			fireproximityprompt(proximityPrompt)
+		else
+			print(`Skipped scrap: {scrapCounter}`)
+		end
+	end
+	local function __init()
+		for _, scraps in LootFolders:GetChildren() do
+			local values = scraps:WaitForChild("Values")
+			if scraps:GetAttribute("Scrap") ~= nil and scraps:IsA("Model") and values:GetAttribute("Available") == true then
+				bringPlr(scraps:GetPivot())
+				--print(`Brought {LocalPlayer.Name} to scrap`)
+				collect(scraps)
+			end
+			task.wait(0.2)
+		end
+		scrapCounter = 0
+	end
+	_container.__init = __init
+end
+ScrapCollectorController.__init()
+return 0
+  	end    
+})
+
+
+Tab:AddButton({
+	Name = "ESP! (V2)",
+	Callback = function()
+      		local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+--[[
+	* The libraries isnt mine, like Bin
+	* It tracks connections, instances, functions, threads, and objects to be later destroyed.
+]]
+local Bin
+do
+	Bin = setmetatable({}, {
+		__tostring = function()
+			return "Bin"
+		end,
+	})
+	Bin.__index = Bin
+	function Bin.new(...)
+		local self = setmetatable({}, Bin)
+		return self:constructor(...) or self
+	end
+	function Bin:constructor()
+	end
+	function Bin:add(item)
+		local node = {
+			item = item,
+		}
+		if self.head == nil then
+			self.head = node
+		end
+		if self.tail then
+			self.tail.next = node
+		end
+		self.tail = node
+		return self
+	end
+	function Bin:destroy()
+		local head = self.head
+		while head do
+			local _binding = head
+			local item = _binding.item
+			if type(item) == "function" then
+				item()
+			elseif typeof(item) == "RBXScriptConnection" then
+				item:Disconnect()
+			elseif type(item) == "thread" then
+				task.cancel(item)
+			elseif item.destroy ~= nil then
+				item:destroy()
+			elseif item.Destroy ~= nil then
+				item:Destroy()
+			end
+			head = head.next
+			self.head = head
+		end
+	end
+	function Bin:isEmpty()
+		return self.head == nil
+	end
+end
+
+--[[
+    ----------------------
+    Variables & References
+    ----------------------
+]]
+
+local AIFolder : Folder = Workspace.Misc.AI
+local LocalPlayer : Player = Players.LocalPlayer
+local CurrentCamera = Workspace.CurrentCamera
+local ScreenGui = Instance.new("ScreenGui")
+
+--[[
+    --------------------
+    Function Declaration
+    --------------------
+    All the functions that are used throughout the code
+]]
+
+function format(num)
+    local formatted = string.format("%.1f", num)
+    return formatted
+end
+
+function blackfunction(...)
+    return ...
+end
+
+--[[
+    ----------------
+    Custom Functions
+    ----------------
+    All the custom functions that are used through the code for compability
+]]
+
+
+local cloneref = cloneref or blackfunction
+
+local function SafeGetService(service)
+    return cloneref(service)
+    
+end
+
+--[[
+    ---------------------
+    Component Declaration
+    ---------------------
+]]
+local ESP
+do
+    ESP = setmetatable({}, {
+        __tostring = function()
+            return "ESP"
+        end,
+    })
+    ESP.__index = ESP
+    function ESP.new(...)
+        local self = setmetatable({}, ESP)
+        return self:constructor(...) or self
+    end
+
+    function ESP:constructor(entity : Model)
+        self.bin = Bin.new()
+        self.labels = {
+            container = Instance.new("Frame"),
+            name = Instance.new("TextLabel"),
+            data = Instance.new("TextLabel"),
+            listlayout = Instance.new('UIListLayout'),
+        }
+        -- Set up:
+        self.instance = entity
+        local attributes = entity:GetAttributes()
+        self.attributes = attributes
+        -- Interface:
+        self:setLabels()
+        -- Initialize:
+        local bin = self.bin
+        local instances = ESP.instances
+        local _entity = entity
+        local _self = self
+        instances[_entity] = _self
+        bin:add(function()
+            local _entity_1 = entity
+            -- ▼ Map.delete ▼ -- cleanup marked
+            local _valueExisted = instances[_entity_1] ~= nil
+            instances[_entity_1] = nil
+            -- ▲ Map.delete ▲
+            return _valueExisted
+        end)
+        entity.AncestryChanged:Connect(function(_, parent)
+            return parent == nil and self:destroy()
+        end)
+        -- Manual update:
+        self:update()
+    end
+   
+    function ESP:setLabels()
+        local _binding = self
+        local labels = _binding.labels
+        local instance = _binding.instance
+        local bin = _binding.bin
+        local _binding_1 = labels
+        local container = _binding_1.container
+        local name = _binding_1.name
+        local data = _binding_1.data
+        local listlayout = _binding_1.listlayout
+        container.Visible = false
+        container.AnchorPoint = Vector2.new(0.5, 0)
+        container.BackgroundTransparency = 1
+        name.BackgroundTransparency = 1
+        name.Font = Enum.Font.Nunito
+        name.Size = UDim2.new(1, 0, 0, 14)
+        name.Text = instance.Name 
+        name.TextSize = 14
+        name.TextStrokeTransparency = 0.5
+        data.BackgroundTransparency = 1
+        data.Font = Enum.Font.Nunito
+        data.Size = UDim2.new(1, 0, 0, 14)
+        data.Text = "[0] [Anger : 0%] [Burst: 0%] [Choke: 100%] [Deflect: 0%]"
+        data.TextSize = 12
+        data.TextStrokeTransparency = 0.5
+        listlayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+        listlayout.SortOrder = Enum.SortOrder.LayoutOrder
+        name.Parent = container
+        data.Parent = container
+        listlayout.Parent = container
+        container.Parent = ScreenGui
+        bin:add(container)
+    end
+    function ESP:setVisible(visible)
+        local _binding = self
+        local labels = _binding.labels
+        local _binding_1 = labels
+        local container = _binding_1.container
+        container.Visible = visible
+    end
+    function ESP:update()
+        local _binding_1 = self
+        local labels = _binding_1.labels
+        local _binding_2 = labels
+        local container = _binding_2.container
+        local name = _binding_2.name
+        local data = _binding_2.data
+        local listlayout = _binding_2.listlayout
+        name.TextColor3 = Color3.new(1, 0, 0)
+        data.TextColor3 = Color3.new(1, 1, 1)
+        listlayout.Padding = UDim.new(0, -4)
+        container.Size = UDim2.new(0, 300, 0, listlayout.AbsoluteContentSize.Y)
+    end
+    function ESP:destroy()
+        return self.bin:destroy()
+    end
+    function ESP:render()
+        local camera = CurrentCamera
+        local instance = self.instance
+        local attributes = self.attributes
+        local labels = self.labels
+        local _binding = labels
+        local container = _binding.container
+        local name = _binding.name
+        local data = _binding.data
+    
+        local position, visible = camera:WorldToViewportPoint(instance.HumanoidRootPart.Position)
+            
+            if visible and LocalPlayer.Character:FindFirstChild('HumanoidRootPart') then
+            local scale = 1 / (position.Z * math.tan(math.rad(camera.FieldOfView * 0.5)) * 2) * 1000
+            local width, height = math.floor(4.5 * scale), math.floor(6 * scale)
+            local x, y = math.floor(position.X), math.floor(position.Y)
+            local xPosition, yPosition = math.floor(x - width * 0.5), math.floor((y - height * 0.5) + (0.5 * scale))
+            local vector2 = Vector2.new(xPosition, yPosition)
+                
+            attributes = instance:GetAttributes()
+    
+            local _valueExisted = container.Visible == false
+            container.Visible = true
+            name.Text = instance.Name
+                
+            local positionDiff = LocalPlayer.Character.HumanoidRootPart.Position - instance.HumanoidRootPart.Position
+            data.Text = `[{format(positionDiff.Magnitude)}] [Anger: {format(attributes.Anger)}] [Choke : {format(attributes.ChokeMeter)}%] [Ground Slam : {format(attributes.Burst)}]`
+    
+            container.Position = UDim2.new(0, vector2.X, 0, vector2.Y + 3)
+        else
+            local _valueExisted_1 = container.Visible == true
+            container.Visible = false
+        end
+    end
+end
+
+ESP.instances = {}
+ESP.connections = Bin.new()
+
+ESP.connections:add(AIFolder.ChildAdded:Connect(function(instance)
+	task.spawn(function()
+        repeat wait() until instance:FindFirstChild("HumanoidRootPart")
+        if instance:IsA("Model") and instance:FindFirstChild("HumanoidRootPart") then
+            ESP.new(instance)
+        end
+    end)
+end))
+ESP.connections:add(RunService.RenderStepped:Connect(function()
+    for _, esp in pairs(ESP.instances) do
+        esp:render()
+    end
+end))
+
+for _, _n in pairs(AIFolder:GetChildren()) do
+    if _n:FindFirstChild("Humanoid") then
+        local suc, res = pcall(function()
+            ESP.new(_n)
+        end)
+        if not suc then
+            warn(res)
+        end
+    end
+end
+
+ScreenGui.DisplayOrder = 10
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.Parent = SafeGetService(game:GetService('CoreGui'))
+return 0
+  	end    
+})
+
+OrionLib:Init()
+ end
+end
